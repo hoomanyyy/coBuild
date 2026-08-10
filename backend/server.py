@@ -98,7 +98,7 @@ def signup(data: dict):
     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
     otp = str(random.randint(100000, 999999))
-    expire = datetime.datetime.now() + datetime.timedelta(minutes=5)
+    expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
 
     execute(
         "INSERT INTO users (username, email, password, otp_code, otp_expire) VALUES (%s, %s, %s, %s, %s)",
@@ -106,6 +106,8 @@ def signup(data: dict):
     )
 
     sendEmail(otp, email)
+
+    print(f"[SIGNUP] email={email} otp={otp} expire={expire}")
 
     return {"Message": True}
 
@@ -116,16 +118,34 @@ def verification(request: Request, data: dict):
     email = str(data.get("Email", "")).strip().lower()
     code = str(data.get("Code", "")).strip()
 
+    if not email or not code:
+        return error("Email and code are required.")
+
     user = find_user(email)
 
-    if user is None or not user["otp_code"]:
-        return error("Invalid or expired code.")
+    if user is None:
+        return error("No account found with this email.")
 
-    if user["otp_expire"] is None or user["otp_expire"] < datetime.datetime.now():
-        return error("Invalid or expired code.")
+    if not user.get("otp_code"):
+        return error("No verification code found. Please sign up again.")
 
-    if str(user["otp_code"]) != code:
-        return error("Invalid or expired code.")
+    expire = user.get("otp_expire")
+    if expire is None:
+        return error("Verification code has expired.")
+
+    now = datetime.datetime.utcnow()
+    if getattr(expire, "tzinfo", None) is not None:
+        expire = expire.replace(tzinfo=None)
+
+    if expire < now:
+        return error("Verification code has expired.")
+
+    stored = str(user["otp_code"]).strip()
+
+    print(f"[VERIFY] email={email} stored={stored} received={code}")
+
+    if stored != code:
+        return error("Incorrect verification code.")
 
     execute(
         "UPDATE users SET otp_code = NULL, otp_expire = NULL WHERE id = %s",
