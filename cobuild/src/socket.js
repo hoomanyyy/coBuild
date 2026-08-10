@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-export const SOCKET_URL = "http://localhost:4000";
+export const SOCKET_URL = "https://websocket-cobuild.onrender.com";
 
 const socket = io(SOCKET_URL, {
   autoConnect: false,
