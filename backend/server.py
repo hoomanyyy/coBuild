@@ -24,15 +24,18 @@ app.add_middleware(
     secret_key="a8f3d9c2e71b4f9a9d6e8c7b1a5c3d",
     session_cookie="cobuild_session",
     max_age=60 * 60 * 24 * 7,
-    same_site="lax",
-    https_only=False
+    same_site="none",
+    https_only=True 
 )
+
+FRONTEND_ORIGINS = [
+    "http://localhost:3000",
+    "https://d13d7191.cobuild-281.pages.dev",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "*"
-    ],
+    allow_origins=FRONTEND_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
