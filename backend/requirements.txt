@@ -3,3 +3,4 @@ fastapi
 bcrypt
 requests
 starlette
+itsdangerous
