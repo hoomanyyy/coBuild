@@ -5,3 +5,4 @@ requests
 starlette
 itsdangerous
 mysql-connector-python
+dotenv
