@@ -4,3 +4,4 @@ bcrypt
 requests
 starlette
 itsdangerous
+mysql-connector-python
